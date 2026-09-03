@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True Confessions — Case No. 53-55</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --ink:#12161c;
+  --panel:#1b212b;
+  --paper:#efe4c8;
+  --paper-dark:#e2d5b3;
+  --stamp:#a6332b;
+  --brass:#b58a4a;
+  --text-light:#ece7da;
+  --text-muted:#9aa0ab;
+  --text-dark:#4a4436;
+  --good:#3c6e47;
+  --bad:#a6332b;
+}
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--ink);
+  color:var(--text-light);
+  font-family:'Inter',sans-serif;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:880px;margin:0 auto;padding:0 1.1rem 4rem;}
+
+/* ---------- HEADER ---------- */
+.masthead{
+  padding:2.2rem 0 1.2rem;
+  border-bottom:1px solid #2a3140;
+  display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap;
+}
+.masthead h1{
+  font-family:'Special Elite',monospace;
+  font-size:clamp(1.6rem,4.5vw,2.4rem);
+  margin:0 0 .25rem;
+  letter-spacing:.5px;
+  color:var(--text-light);
+}
+.masthead .case-no{
+  font-family:'Special Elite',monospace;
+  color:var(--brass);
+  font-size:.85rem;
+  letter-spacing:1px;
+}
+.masthead .sub{color:var(--text-muted); font-size:.92rem; max-width:32ch;}
+#ref-toggle{
+  background:none;border:1px solid var(--brass); color:var(--brass);
+  font-family:'Inter',sans-serif; font-weight:600; font-size:.85rem;
+  padding:.5rem .9rem; border-radius:2px; cursor:pointer; white-space:nowrap;
+}
+#ref-toggle:hover{background:rgba(181,138,74,.12);}
+
+/* ---------- REFERENCE PANEL ---------- */
+#ref-panel{
+  display:none; background:var(--panel); border:1px solid #2a3140;
+  border-left:3px solid var(--brass); padding:1.1rem 1.3rem; margin:1rem 0;
+  font-size:.9rem;
+}
+#ref-panel.open{display:block;}
+#ref-panel h3{margin-top:0; font-family:'Special Elite',monospace; font-weight:400; color:var(--brass); font-size:1rem;}
+#ref-panel table{width:100%; border-collapse:collapse;}
+#ref-panel td{padding:.45rem .4rem; vertical-align:top; border-bottom:1px solid #2a3140;}
+#ref-panel td:first-child{width:34%; color:var(--brass); font-weight:600; white-space:nowrap;}
+#ref-panel .note{margin-top:.8rem; color:var(--text-muted); font-size:.85rem;}
+
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex; gap:.35rem; margin:1.3rem 0 0; overflow-x:auto; padding-bottom:2px;
+  scrollbar-width:thin;
+}
+.tabs button{
+  font-family:'Special Elite',monospace;
+  background:#1a1f28; color:var(--text-muted);
+  border:1px solid #2a3140; border-bottom:none;
+  padding:.6rem .95rem .5rem; font-size:.78rem; letter-spacing:.4px;
+  cursor:pointer; white-space:nowrap; border-radius:3px 3px 0 0;
+  transition:background .15s,color .15s;
+}
+.tabs button.active{ background:var(--paper); color:var(--text-dark); border-color:var(--paper); }
+.tabs button:not(.active):hover{ background:#232a36; color:var(--text-light); }
+.tabs button:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+/* ---------- STAGE PANELS ---------- */
+main{ background:var(--paper); color:var(--text-dark); border:1px solid var(--brass); border-radius:0 3px 3px 3px; }
+.stage{ display:none; padding:1.8rem 1.9rem 2.1rem; }
+.stage.active{ display:block; }
+.stage h2{
+  font-family:'Special Elite',monospace; font-weight:400; font-size:1.35rem;
+  margin:0 0 .3rem; color:var(--stamp);
+}
+.stage .brief{ font-size:.95rem; color:var(--text-dark); margin-bottom:1.3rem; max-width:64ch; }
+.stage .brief b{ color:var(--stamp); }
+
+hr.tear{ border:none; border-top:1px dashed #b8ab88; margin:1.6rem 0; }
+
+/* ---------- STAMP ---------- */
+.stamp{
+  display:inline-block; font-family:'Special Elite',monospace; letter-spacing:2px;
+  text-transform:uppercase; color:var(--stamp); border:3px solid var(--stamp);
+  padding:.3rem .8rem; border-radius:4px; transform:rotate(-6deg);
+  background:rgba(166,51,43,.05);
+}
+
+/* ---------- SORT GAME (stage 1) ---------- */
+.score-line{ font-size:.85rem; color:var(--text-dark); margin-bottom:.9rem; font-weight:600; }
+.pool{ display:flex; flex-wrap:wrap; gap:.5rem; padding:.9rem; background:var(--paper-dark); border:1px dashed var(--brass); border-radius:3px; margin-bottom:1.2rem; min-height:3.2rem; }
+.chip{
+  background:var(--panel); color:var(--text-light); border:1px solid var(--brass);
+  padding:.4rem .8rem; border-radius:2px; font-size:.88rem; cursor:pointer; user-select:none;
+  transition:transform .1s;
+}
+.chip:hover{ transform:translateY(-1px); }
+.chip.selected{ background:var(--stamp); border-color:var(--stamp); }
+.chip.placed{ opacity:0; pointer-events:none; position:absolute; }
+.buckets{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
+@media(max-width:560px){ .buckets{ grid-template-columns:1fr; } }
+.bucket{
+  border:2px solid var(--text-dark); border-radius:3px; padding:.8rem; min-height:5rem;
+  position:relative; background:#f6efdc;
+}
+.bucket h4{ margin:0 0 .5rem; font-size:.82rem; font-family:'Special Elite',monospace; font-weight:400; }
+.bucket .placed-list{ display:flex; flex-wrap:wrap; gap:.35rem; }
+.bucket .placed-list span{
+  background:var(--good); color:#fff; padding:.25rem .55rem; border-radius:2px; font-size:.8rem;
+}
+.bucket.shake{ animation:shake .35s; }
+@keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+.bucket.flash-bad{ border-color:var(--bad); }
+#sort-reveal{ margin-top:1.1rem; }
+
+/* ---------- CONFESSION CARDS (stage 2) ---------- */
+.card{
+  background:#f6efdc; border:1px solid var(--brass); border-left:4px solid var(--stamp);
+  padding:1rem 1.15rem; margin-bottom:1.1rem; border-radius:0 3px 3px 0;
+}
+.card h4{ margin:0 0 .35rem; font-size:1rem; }
+.card p.q{ margin:0 0 .7rem; font-size:.92rem; }
+.card textarea{
+  width:100%; min-height:3.1rem; font-family:'Inter',sans-serif; font-size:.92rem;
+  border:1px solid #b8ab88; border-radius:3px; padding:.55rem .65rem; resize:vertical;
+  background:#fffdf6;
+}
+.card textarea:focus-visible{ outline:2px solid var(--brass); }
+.card-actions{ display:flex; align-items:center; gap:.7rem; margin-top:.55rem; flex-wrap:wrap; }
+.btn{
+  font-family:'Inter',sans-serif; font-weight:600; font-size:.85rem; cursor:pointer;
+  border-radius:3px; padding:.5rem 1rem; border:1px solid var(--stamp); background:var(--stamp); color:#fff;
+}
+.btn:hover{ background:#8a2721; }
+.btn.ghost{ background:transparent; color:var(--stamp); }
+.btn.ghost:hover{ background:rgba(166,51,43,.08); }
+.feedback{ font-size:.85rem; font-weight:600; }
+.feedback.ok{ color:var(--good); }
+.feedback.no{ color:var(--bad); }
+details.hint{ font-size:.82rem; color:var(--text-dark); margin-top:.4rem; }
+details.hint summary{ cursor:pointer; color:var(--brass); font-weight:600; }
+
+/* ---------- INTERROGATION (stage 3) ---------- */
+.card-draw{
+  background:var(--panel); color:var(--text-light); border:2px solid var(--brass);
+  border-radius:4px; padding:1.6rem 1.4rem; min-height:6rem; display:flex; align-items:center;
+  justify-content:center; text-align:center; font-size:1.05rem; margin-bottom:1rem;
+}
+.card-draw span{ font-family:'Special Elite',monospace; font-size:.72rem; letter-spacing:1.5px;
+  color:var(--brass); display:block; margin-bottom:.6rem; }
+.draw-row{ display:flex; gap:.7rem; flex-wrap:wrap; }
+
+/* ---------- COURTROOM (stage 4) ---------- */
+.case{ background:#f6efdc; border:1px solid var(--brass); padding:1rem 1.15rem; margin-bottom:1.2rem; }
+.case h4{ margin:0 0 .4rem; font-size:.98rem; }
+.timer-row{ display:flex; align-items:center; gap:.8rem; margin-top:.6rem; flex-wrap:wrap; }
+.timer-display{ font-family:'Special Elite',monospace; font-size:1rem; color:var(--stamp); min-width:2.6rem; }
+
+/* ---------- COOL DOWN (stage 5) ---------- */
+.take-row{ display:flex; gap:.6rem; margin-bottom:.6rem; align-items:center; }
+.take-row span{ font-family:'Special Elite',monospace; font-size:.85rem; color:var(--brass); width:1.4rem; }
+.take-row input{
+  flex:1; padding:.5rem .6rem; border:1px solid #b8ab88; border-radius:3px; font-family:'Inter',sans-serif;
+  background:#fffdf6; font-size:.9rem;
+}
+.slider-wrap{ margin:1.1rem 0; }
+.slider-wrap label{ font-size:.9rem; font-weight:600; display:block; margin-bottom:.4rem; }
+#closed-stamp{ display:none; text-align:center; margin-top:1.4rem; }
+#closed-stamp.show{ display:block; animation:pop .3s ease-out; }
+@keyframes pop{ from{ transform:scale(.85); opacity:0;} to{ transform:scale(1); opacity:1; } }
+
+footer{ text-align:center; color:var(--text-muted); font-size:.78rem; margin-top:1.6rem; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <div>
+      <div class="case-no">CASE NO. 53–55 · VERB PATTERNS</div>
+      <h1>True Confessions</h1>
+      <div class="sub">A consolidation file: gerunds, infinitives &amp; the verbs that go with them.</div>
+    </div>
+    <button id="ref-toggle" onclick="toggleRef()">📋 Verb patterns (quick look)</button>
+  </div>
+
+  <div id="ref-panel">
+    <h3>Quick reference — no new theory, just a reminder</h3>
+    <table>
+      <tr><td>verb + doing</td><td>enjoy, mind, suggest, admit, deny, avoid, risk, imagine, fancy, consider, stop, finish, recommend, give up, put off, go on / keep (on)</td></tr>
+      <tr><td>verb + to do</td><td>decide, agree, refuse, promise, threaten, manage, fail, hope, plan, arrange, forget, learn, tend, afford, deserve, offer, dare, seem, appear, pretend, claim</td></tr>
+      <tr><td>verb + somebody + to do</td><td>want, ask, expect, would like/prefer, tell, advise, remind, warn, invite, encourage, persuade, get, teach, allow, enable</td></tr>
+      <tr><td>verb + somebody + do <em>(no to!)</em></td><td>make, let</td></tr>
+      <tr><td>extra patterns</td><td>stop / imagine / remember / keep + somebody + -ing · having done (admit / deny / regret) · question word + to (ask / decide / wonder / explain + how/what/where to)</td></tr>
+    </table>
+    <div class="note">Forgot a pattern mid-task? Come back here any time — this doesn't count as part of your score.</div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="active" onclick="showStage(0,this)">0 · Briefing</button>
+    <button onclick="showStage(1,this)">1 · Sort the Evidence</button>
+    <button onclick="showStage(2,this)">2 · Confession Booth</button>
+    <button onclick="showStage(3,this)">3 · Interrogation Room</button>
+    <button onclick="showStage(4,this)">4 · Courtroom</button>
+    <button onclick="showStage(5,this)">5 · Case Closed</button>
+  </nav>
+
+  <main>
+
+    <!-- STAGE 0 — BRIEFING -->
+    <section class="stage active" id="stage-0">
+      <h2>Briefing</h2>
+      <p class="brief">
+        Detective, you already know the rules — <b>gerund</b> after some verbs, <b>infinitive</b> after others,
+        and a few verbs that need a person in between. Today isn't about learning the rules again.
+        It's about <b>using them without thinking</b>, in real conversation with your teacher.
+      </p>
+      <p class="brief">There are five rooms in this case file. Work through them in order — each one gets a little more talkative than the last.</p>
+      <ol style="font-size:.95rem; max-width:60ch;">
+        <li><b>Sort the Evidence</b> — a quick warm-up to check the patterns are still fresh.</li>
+        <li><b>Confession Booth</b> — short personal sentences. Type one, get feedback, move on.</li>
+        <li><b>Interrogation Room</b> — speaking cards for you and your teacher.</li>
+        <li><b>Courtroom</b> — discuss real cases and give your verdict, out loud.</li>
+        <li><b>Case Closed</b> — a two-minute reflection before you leave.</li>
+      </ol>
+      <p class="brief">Ready? Open <b>1 · Sort the Evidence</b> above.</p>
+    </section>
+
+    <!-- STAGE 1 — SORT THE EVIDENCE -->
+    <section class="stage" id="stage-1">
+      <h2>Sort the Evidence</h2>
+      <p class="brief">Tap a verb, then tap the box it belongs in. Wrong guess? It jumps back to the pile — no penalty, just try again.</p>
+      <div class="score-line" id="sort-score">Evidence sorted: 0 / 26</div>
+      <div class="pool" id="chip-pool"></div>
+      <div class="buckets">
+        <div class="bucket" data-bucket="ing"><h4>+ doing</h4><div class="placed-list"></div></div>
+        <div class="bucket" data-bucket="to"><h4>+ to do</h4><div class="placed-list"></div></div>
+        <div class="bucket" data-bucket="objto"><h4>+ somebody + to do</h4><div class="placed-list"></div></div>
+        <div class="bucket" data-bucket="bare"><h4>+ somebody + do <em>(no to!)</em></h4><div class="placed-list"></div></div>
+      </div>
+      <div id="sort-reveal" style="display:none;">
+        <p class="stamp">case solved</p>
+        <p style="font-size:.85rem;">Nice work. Head to <b>2 · Confession Booth</b> when you're ready.</p>
+      </div>
+    </section>
+
+    <!-- STAGE 2 — CONFESSION BOOTH -->
+    <section class="stage" id="stage-2">
+      <h2>Confession Booth</h2>
+      <p class="brief">Ten short prompts. Answer honestly (or make something up — detectives allow that). Write <b>one full sentence</b> using the verb given, then check it.</p>
+      <div id="confession-list"></div>
+    </section>
+
+    <!-- STAGE 3 — INTERROGATION ROOM -->
+    <section class="stage" id="stage-3">
+      <h2>Interrogation Room</h2>
+      <p class="brief">Pull a card. Read it aloud to your teacher and answer in full sentences — try to reuse the verb pattern the question is built on. Pull as many cards as you like.</p>
+      <div class="card-draw"><span>CARD</span><div id="card-text">Tap "Pull a card" to begin.</div></div>
+      <div class="draw-row">
+        <button class="btn" onclick="drawCard()">🎴 Pull a card</button>
+      </div>
+    </section>
+
+    <!-- STAGE 4 — COURTROOM -->
+    <section class="stage" id="stage-4">
+      <h2>Courtroom</h2>
+      <p class="brief">Five real disputes. Think for a minute (use the timer if you like), then argue your verdict out loud with your teacher. Try to use words like <i>recommend, advise, persuade, force, allow, warn</i>.</p>
+      <div id="case-list"></div>
+    </section>
+
+    <!-- STAGE 5 — CASE CLOSED -->
+    <section class="stage" id="stage-5">
+      <h2>Case Closed</h2>
+      <p class="brief">Before you go — three things worth keeping, and one honest rating.</p>
+
+      <div class="take-row"><span>1.</span><input type="text" placeholder="an expression, word, or pattern you want to remember"></div>
+      <div class="take-row"><span>2.</span><input type="text" placeholder="another one..."></div>
+      <div class="take-row"><span>3.</span><input type="text" placeholder="and one more..."></div>
+
+      <div class="slider-wrap">
+        <label for="confidence">How sure are you, right now, choosing <i>-ing</i> vs <i>to</i>? <span id="conf-val">3</span> / 5</label>
+        <input type="range" min="1" max="5" value="3" id="confidence" oninput="document.getElementById('conf-val').textContent=this.value">
+      </div>
+
+      <button class="btn" onclick="closeCase()">🔒 Close the case</button>
+
+      <div id="closed-stamp">
+        <p class="stamp" style="font-size:1.3rem;">case closed</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>Murphy · English Grammar in Use — Units 53–55 · consolidation lesson</footer>
+</div>
+
+<script>
+/* ---------- NAV ---------- */
+function showStage(n, btn){
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  document.getElementById('stage-'+n).classList.add('active');
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function toggleRef(){
+  document.getElementById('ref-panel').classList.toggle('open');
+}
+
+/* ---------- STAGE 1: SORT THE EVIDENCE ---------- */
+const chipData = [
+  {v:'admit', b:'ing'}, {v:'decide', b:'to'}, {v:'want', b:'objto'}, {v:'make', b:'bare'},
+  {v:'suggest', b:'ing'}, {v:'promise', b:'to'}, {v:'ask', b:'objto'}, {v:'let', b:'bare'},
+  {v:'avoid', b:'ing'}, {v:'agree', b:'to'}, {v:'warn', b:'objto'},
+  {v:'deny', b:'ing'}, {v:'refuse', b:'to'}, {v:'allow', b:'objto'},
+  {v:'give up', b:'ing'}, {v:'manage', b:'to'}, {v:'persuade', b:'objto'},
+  {v:'imagine', b:'ing'}, {v:'threaten', b:'to'}, {v:'teach', b:'objto'},
+  {v:'risk', b:'ing'}, {v:'hope', b:'to'}, {v:'encourage', b:'objto'},
+  {v:'fancy', b:'ing'}, {v:'arrange', b:'to'}, {v:'tell', b:'objto'}
+];
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+let selectedChip = null;
+let sortedCount = 0;
+const shuffledChips = shuffle(chipData);
+const pool = document.getElementById('chip-pool');
+shuffledChips.forEach((item,idx)=>{
+  const chip = document.createElement('div');
+  chip.className='chip'; chip.textContent=item.v; chip.dataset.idx=idx; chip.dataset.b=item.b;
+  chip.addEventListener('click', ()=>{
+    if(chip.classList.contains('placed')) return;
+    document.querySelectorAll('.chip.selected').forEach(c=>c.classList.remove('selected'));
+    if(selectedChip===chip){ selectedChip=null; return; }
+    chip.classList.add('selected');
+    selectedChip = chip;
+  });
+  pool.appendChild(chip);
+});
+document.querySelectorAll('.bucket').forEach(bucket=>{
+  bucket.addEventListener('click', ()=>{
+    if(!selectedChip) return;
+    const correct = selectedChip.dataset.b === bucket.dataset.bucket;
+    if(correct){
+      const tag = document.createElement('span');
+      tag.textContent = selectedChip.textContent;
+      bucket.querySelector('.placed-list').appendChild(tag);
+      selectedChip.classList.add('placed');
+      selectedChip.classList.remove('selected');
+      sortedCount++;
+      document.getElementById('sort-score').textContent = 'Evidence sorted: '+sortedCount+' / 26';
+      selectedChip = null;
+      if(sortedCount===26){
+        document.getElementById('sort-reveal').style.display='block';
+      }
+    } else {
+      bucket.classList.add('shake','flash-bad');
+      setTimeout(()=>bucket.classList.remove('shake','flash-bad'), 400);
+      selectedChip.classList.remove('selected');
+      selectedChip = null;
+    }
+  });
+});
+
+/* ---------- STAGE 2: CONFESSION BOOTH ---------- */
+const confessions = [
+  {
+    title:'Suggest something',
+    q:'Suggest something you and your teacher could do to make lessons more fun.',
+    ph:'I suggest ...',
+    hint:'Pattern: suggest + doing',
+    test:(t)=>/suggest[\s\S]{0,35}?\w+ing\b/i.test(t)
+  },
+  {
+    title:'A habit you gave up',
+    q:"What's a habit you gave up? Use GIVE UP.",
+    ph:'I gave up ...',
+    hint:'Pattern: give up + doing',
+    test:(t)=>/\b(gave|give|given)\s+up[\s\S]{0,35}?\w+ing\b/i.test(t)
+  },
+  {
+    title:"Can't stop yourself",
+    q:"Is there something you can't stop yourself doing?",
+    ph:"I can't stop ...",
+    hint:'Pattern: stop (somebody) + doing',
+    test:(t)=>/\bstop[\s\S]{0,35}?\w+ing\b/i.test(t)
+  },
+  {
+    title:'Manage or fail',
+    q:'Tell me about something you managed to do, or failed to do, recently.',
+    ph:'I managed to ... / I failed to ...',
+    hint:'Pattern: manage / fail + to do',
+    test:(t)=>/\b(manag\w*|fail\w*)[\s\S]{0,20}?\bto\s+\w+/i.test(t)
+  },
+  {
+    title:'Make a promise',
+    q:'Make a promise to your teacher about your studies this month.',
+    ph:'I promise to ...',
+    hint:'Pattern: promise + to do',
+    test:(t)=>/\bpromise[\s\S]{0,20}?\bto\s+\w+/i.test(t)
+  },
+  {
+    title:'Warn me',
+    q:'Warn your teacher about something — funny or real.',
+    ph:'I warn you ...',
+    hint:'Pattern: warn (somebody) + (not) to do',
+    test:(t)=>/\bwarn[\s\S]{0,25}?\bto\s+\w+/i.test(t)
+  },
+  {
+    title:'Talk me into it',
+    q:'Persuade or encourage your teacher to do something this week.',
+    ph:'I want to persuade you to ...',
+    hint:'Pattern: persuade / encourage (somebody) + to do',
+    test:(t)=>/\b(persuad\w*|encourag\w*)[\s\S]{0,25}?\bto\s+\w+/i.test(t)
+  },
+  {
+    title:"No 'to' allowed!",
+    q:'What did your parents MAKE you do, or LET you do, as a child?',
+    ph:'My parents made me ... / My parents let me ...',
+    hint:"Careful — NO 'to' after make / let!",
+    test:(t)=>{
+      const hasPattern = /\b(made|make|let)\s+(me|us|him|her|them|you)\s+\w+/i.test(t);
+      const wrongTo = /\b(made|make|let)\s+(me|us|him|her|them|you)\s+to\b/i.test(t);
+      return hasPattern && !wrongTo;
+    }
+  },
+  {
+    title:'Something you remember',
+    q:"What's something you remember doing as a child, or regret doing now?",
+    ph:'I remember ... / I regret ...',
+    hint:'Pattern: remember / regret + doing',
+    test:(t)=>/\b(remember|regret)[\s\S]{0,35}?\w+ing\b/i.test(t)
+  },
+  {
+    title:'Pretend, seem, claim',
+    q:'Have you ever pretended to be doing something, or claimed to have done something you didn\u2019t?',
+    ph:'I once pretended to ... / I seem to ...',
+    hint:'Pattern: pretend / seem / claim + to (be/have) do(ing/done)',
+    test:(t)=>/\b(pretend\w*|seem\w*|claim\w*)[\s\S]{0,20}?\bto\s+\w+/i.test(t)
+  }
+];
+const confList = document.getElementById('confession-list');
+confessions.forEach((c,i)=>{
+  const card = document.createElement('div');
+  card.className='card';
+  card.innerHTML = `
+    <h4>${i+1}. ${c.title}</h4>
+    <p class="q">${c.q}</p>
+    <textarea placeholder="${c.ph}" id="conf-${i}"></textarea>
+    <div class="card-actions">
+      <button class="btn" onclick="checkConfession(${i})">Check my sentence</button>
+      <span class="feedback" id="conf-fb-${i}"></span>
+    </div>
+    <details class="hint"><summary>Need the pattern?</summary>${c.hint}</details>
+  `;
+  confList.appendChild(card);
+});
+function checkConfession(i){
+  const text = document.getElementById('conf-'+i).value.trim();
+  const fb = document.getElementById('conf-fb-'+i);
+  if(text.length < 4){
+    fb.textContent = 'Write a full sentence first.'; fb.className='feedback no'; return;
+  }
+  const ok = confessions[i].test(text);
+  if(ok){
+    fb.textContent = '✓ Good — that pattern is there. Say it out loud too!'; fb.className='feedback ok';
+  } else {
+    fb.textContent = '✗ Not quite — check the pattern below and try again.'; fb.className='feedback no';
+  }
+}
+
+/* ---------- STAGE 3: INTERROGATION ROOM ---------- */
+const cards = [
+  "Ask your teacher: what would you recommend doing to improve English faster?",
+  "What's something you were never allowed to do as a teenager?",
+  "Tell me about a rule your parents forced you to follow.",
+  "What's something you were taught to do that you disagree with now?",
+  "Describe a time someone persuaded you to do something risky.",
+  "What advice would you give someone who can't decide what to study?",
+  "Explain how to make the perfect cup of tea or coffee — use at least two infinitives.",
+  "What's something you've always dreamed of daring to try?",
+  "Have you ever pretended to enjoy something you actually hated?",
+  "What's a mistake you keep making, no matter how hard you try to stop?",
+  "If a friend asked for advice about quitting their job, what would you tell them to do?",
+  "What's something you were warned not to do, but did anyway?",
+  "Imagine your best friend doing something completely out of character — what would it be?",
+  "Tell me about a time you refused to do something, even under pressure.",
+  "What's something your boss (or teacher) expects you to do every week?"
+];
+let lastCard = -1;
+function drawCard(){
+  let idx;
+  do{ idx = Math.floor(Math.random()*cards.length); } while(idx===lastCard && cards.length>1);
+  lastCard = idx;
+  document.getElementById('card-text').textContent = cards[idx];
+}
+
+/* ---------- STAGE 4: COURTROOM ---------- */
+const cases = [
+  "A 16-year-old wants to drop out of school to become an influencer. Their parents refuse to allow it. What would you advise them to do?",
+  "Should companies be allowed to force employees to answer emails after 9pm?",
+  "A friend keeps putting off going to the dentist despite the pain. How would you persuade them to go?",
+  "Should schools ban phones completely, or let students use them during breaks?",
+  "A friend was caught cheating on an exam and asks you not to tell anyone. What do you recommend they do?"
+];
+const caseList = document.getElementById('case-list');
+cases.forEach((text,i)=>{
+  const div = document.createElement('div');
+  div.className='case';
+  div.innerHTML = `
+    <h4>Case ${i+1}</h4>
+    <p class="q">${text}</p>
+    <div class="timer-row">
+      <button class="btn ghost" onclick="startTimer(${i})">⏱ 60s to think</button>
+      <span class="timer-display" id="timer-${i}">1:00</span>
+    </div>
+  `;
+  caseList.appendChild(div);
+});
+const timerState = {};
+function startTimer(i){
+  if(timerState[i]) clearInterval(timerState[i]);
+  let secs = 60;
+  const el = document.getElementById('timer-'+i);
+  el.textContent = '1:00';
+  timerState[i] = setInterval(()=>{
+    secs--;
+    if(secs<=0){
+      clearInterval(timerState[i]);
+      el.textContent = "Go!";
+      return;
+    }
+    const m = Math.floor(secs/60), s = secs%60;
+    el.textContent = m+':'+(s<10?'0':'')+s;
+  },1000);
+}
+
+/* ---------- STAGE 5 ---------- */
+function closeCase(){
+  document.getElementById('closed-stamp').classList.add('show');
+}
+</script>
+</body>
+</html>
